@@ -5,6 +5,8 @@ use num_prime::nt_funcs::factorize64;
 use std::cmp;
 use std::collections::BTreeMap;
 
+type MapVec = IntMap<Vec<usize>>;
+
 pub fn quadratic_algorithm(input: &[u64]) -> u64 {
     let mut map: IntMap<u64> = IntMap::new(); // it's faster
     map.insert(0, 0);
@@ -40,7 +42,7 @@ pub fn quadratic_algorithm(input: &[u64]) -> u64 {
 
 pub fn subquadratic_algorithm(input: &[u64]) -> u64 {
     // first let's count indexes for each number
-    let mut indexes: IntMap<Vec<usize>> = IntMap::new();
+    let mut indexes: MapVec = MapVec::new();
     for el in input.iter().unique() {
         indexes.insert(*el, Vec::new());
     }
@@ -213,4 +215,16 @@ fn count_elements_4(lists: (&Vec<usize>, &Vec<usize>, &Vec<usize>, &Vec<usize>))
         count += c1 * c2 * c3;
     }
     count as u64
+}
+
+// returns the number of unique triples for the number
+#[allow(dead_code)]
+pub fn count_triplets(value : u64) -> usize {
+    let mut count : usize = 0;
+    let factors = factorize64(value);
+    let first_dividers = find_first_dividers(value, &factors);
+    for first_divider in first_dividers {
+        count += find_second_dividers(value, first_divider, &factors).len();        
+    }
+    count
 }

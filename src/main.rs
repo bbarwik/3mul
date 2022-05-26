@@ -3,7 +3,7 @@ use std::time;
 use three_mul;
 
 #[macro_use] extern crate prettytable;
-use prettytable::{Table, Row, Cell};
+use prettytable::Table;
 
 mod data_sets;
 
