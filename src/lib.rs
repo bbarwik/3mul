@@ -1,5 +1,6 @@
 use intmap::IntMap;
 use itertools::Itertools;
+use num::integer::Roots;
 use num_integer::binomial;
 use num_prime::nt_funcs::factorize64;
 use std::cmp;
@@ -10,6 +11,7 @@ type MapVec = IntMap<Vec<usize>>;
 pub fn quadratic_algorithm(input: &[u64]) -> u64 {
     let mut map: IntMap<u64> = IntMap::new(); // it's faster
     map.insert(0, 0);
+    let mut zeros = 0;
     let mut count: u64 = 0;
     for i in 0..input.len() {
         let limit = u64::MAX / cmp::max(1, input[i]);
@@ -23,7 +25,9 @@ pub fn quadratic_algorithm(input: &[u64]) -> u64 {
             }
         }
         if input[i] == 0 {
-            *map.get_mut(0).unwrap() += 1;
+            let elements_left = input.len() - i - 1;
+            count += zeros * binomial(elements_left, 2) as u64;
+            zeros += 1;
             continue;
         }
         for j in 0..i {
@@ -49,10 +53,13 @@ pub fn subquadratic_algorithm(input: &[u64]) -> u64 {
     for i in 0..input.len() {
         indexes.get_mut(input[i]).unwrap().push(i);
     }
-    indexes.remove(0);
 
     // now let's iterate over each unique number
     let mut count: u64 = 0;
+    if let Some(zeros) = indexes.get(0) {
+        count += count_zeros(input.len(), &zeros);
+        indexes.remove(0);
+    }
     for value in indexes.keys() {
         let value = *value;
         let factors = factorize64(value); // O(value ^ (1/4))
@@ -76,7 +83,7 @@ pub fn subquadratic_algorithm(input: &[u64]) -> u64 {
                                 count += count_elements_3((&l0, &l2, &l1));
                             } else {
                                 count += count_elements_4((&l0, &l1, &l2, &l3));
-                            }                            
+                            }
                         }
                     }
                 }
@@ -140,9 +147,13 @@ pub fn find_second_dividers(
 ) -> Vec<u64> {
     let mut minimum_divider = 1;
     if value / first_divider > first_divider {
-        minimum_divider = ((value / first_divider) as f64 / first_divider as f64).ceil() as u64;
+        let divided = value / first_divider;
+        minimum_divider = divided / first_divider;
+        if divided % first_divider != 0 {
+            minimum_divider += 1; // round up, not using f64 because it lacks precision
+        }
     }
-    let max_divider = ((value / first_divider) as f64).sqrt() as u64;
+    let max_divider = (value / first_divider).sqrt();
     let mut vec1: Vec<u64> = Vec::with_capacity(100);
     let mut vec2: Vec<u64> = Vec::with_capacity(100);
     if minimum_divider == 1 {
@@ -184,6 +195,22 @@ pub fn find_second_dividers(
     return vec2;
 }
 
+fn count_zeros(len: usize, indexes: &Vec<usize>) -> u64 {
+    let mut count = 0;
+    let mut zeros: usize = 0;
+    for i in indexes {
+        let zeros_after = indexes.len() - zeros - 1;
+        let non_zero_elements_after = len - i - 1 - zeros_after;
+        let c1 = zeros_after * binomial(non_zero_elements_after, 2);
+        let c2 = binomial(zeros_after, 2) * non_zero_elements_after;
+        let c3 = binomial(zeros_after, 3);
+        let c = c1 + c2 + c3;
+        count += c;
+        zeros += 1;
+    }
+    count as u64
+}
+
 // counts elements for (a, a, a) triplet
 fn count_elements_2(lists: (&Vec<usize>, &Vec<usize>)) -> u64 {
     let mut count = 0;
@@ -219,12 +246,12 @@ fn count_elements_4(lists: (&Vec<usize>, &Vec<usize>, &Vec<usize>, &Vec<usize>))
 
 // returns the number of unique triples for the number
 #[allow(dead_code)]
-pub fn count_triplets(value : u64) -> usize {
-    let mut count : usize = 0;
+pub fn count_triplets(value: u64) -> usize {
+    let mut count: usize = 0;
     let factors = factorize64(value);
     let first_dividers = find_first_dividers(value, &factors);
     for first_divider in first_dividers {
-        count += find_second_dividers(value, first_divider, &factors).len();        
+        count += find_second_dividers(value, first_divider, &factors).len();
     }
     count
 }

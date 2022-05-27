@@ -7,10 +7,12 @@ edition = "2021"
 
 [dependencies]
 itertools = "0.10.3"
+num = "0.4.0"
 num-integer = "0.1.45"
 num-prime = "0.4.1"
 intmap = "0.7.1"
 prettytable-rs = "^0.8"
+work-queue = "0.1.3"
 
 [profile.release]
 debug = true

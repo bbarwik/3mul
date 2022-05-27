@@ -1,18 +1,18 @@
 use num_prime::buffer::NaiveBuffer;
 use three_mul;
 
-const SIZE: u64 = 500000;
+const SIZE: u64 = 500;
 
 pub fn very_small_numbers() -> Vec<u64> {
     let mut vec: Vec<u64> = Vec::with_capacity(SIZE as usize);
     for i in 0..SIZE {
-        vec.push(1 + i % 256);
+        vec.push(i % 256);
     }
     return vec;
 }
 
 pub fn small_unique_numbers() -> Vec<u64> {
-    Vec::from_iter((1..SIZE+1).rev())
+    Vec::from_iter((1..SIZE + 1).rev())
 }
 
 pub fn very_big_numbers() -> Vec<u64> {
@@ -27,7 +27,7 @@ pub fn max_number() -> Vec<u64> {
     // it's the number with the highest number of triplets
     // it's divided by 2 because IntMap can't support such big number correctly
     // will correct it later, need to find good replacement for IntMap
-    const MAX_NUMBER: u64 = 17952249695732352000 / 2; 
+    const MAX_NUMBER: u64 = 17952249695732352000 / 2;
     let mut vec: Vec<u64> = Vec::with_capacity(SIZE as usize);
     vec.push(MAX_NUMBER);
     let dividers = three_mul::find_dividers(MAX_NUMBER);
