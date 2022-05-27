@@ -1,7 +1,7 @@
 use num_prime::buffer::NaiveBuffer;
 use three_mul;
 
-const SIZE: u64 = 1000000;
+const SIZE: u64 = 500000;
 
 pub fn very_small_numbers() -> Vec<u64> {
     let mut vec: Vec<u64> = Vec::with_capacity(SIZE as usize);
