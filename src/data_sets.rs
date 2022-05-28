@@ -17,9 +17,12 @@ pub fn small_unique_numbers() -> Vec<u64> {
 
 pub fn very_big_numbers() -> Vec<u64> {
     let mut vec: Vec<u64> = Vec::with_capacity(SIZE as usize);
-    for i in 1..=SIZE {
+    for i in 1..=SIZE/2-1000 {
+        vec.push(u64::MAX / 2 + i);
         vec.push(u64::MAX / 2 + i);
     }
+    vec.extend((1..500).rev());
+    vec.extend((1..500).rev());
     return vec;
 }
 

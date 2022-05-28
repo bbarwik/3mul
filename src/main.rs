@@ -30,7 +30,6 @@ fn main() {
     let queue: Queue<Task> = Queue::new(cores, 64);
 
     let rows = Arc::new(Mutex::new(Vec::new()));
-
     let data_sets = data_sets::get_data_sets();
     for (name, data_set) in data_sets.clone() {
         let rows = rows.clone();

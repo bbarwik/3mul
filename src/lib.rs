@@ -6,7 +6,8 @@ use num_prime::nt_funcs::factorize64;
 use std::cmp;
 use std::collections::BTreeMap;
 
-type MapVec = IntMap<Vec<usize>>;
+mod fast_hash_set;
+use fast_hash_set::FastHashSet;
 
 pub fn quadratic_algorithm(input: &[u64]) -> u64 {
     let mut map: IntMap<u64> = IntMap::new(); // it's faster
@@ -46,7 +47,7 @@ pub fn quadratic_algorithm(input: &[u64]) -> u64 {
 
 pub fn subquadratic_algorithm(input: &[u64]) -> u64 {
     // first let's count indexes for each number
-    let mut indexes: MapVec = MapVec::new();
+    let mut indexes: FastHashSet = FastHashSet::new();
     for el in input.iter().unique() {
         indexes.insert(*el, Vec::new());
     }
@@ -58,10 +59,12 @@ pub fn subquadratic_algorithm(input: &[u64]) -> u64 {
     let mut count: u64 = 0;
     if let Some(zeros) = indexes.get(0) {
         count += count_zeros(input.len(), &zeros);
-        indexes.remove(0);
     }
-    for value in indexes.keys() {
+    for value in input.iter().unique() {
         let value = *value;
+        if value == 0 {
+            continue;
+        }
         let factors = factorize64(value); // O(value ^ (1/4))
         let first_dividers = find_first_dividers(value, &factors);
         let l0 = indexes.get(value).unwrap();
@@ -74,15 +77,15 @@ pub fn subquadratic_algorithm(input: &[u64]) -> u64 {
                         let div3 = value2 / div2;
                         if let Some(l3) = indexes.get(div3) {
                             if div1 == div2 && div2 == div3 {
-                                count += count_elements_2((&l0, &l1));
+                                count += count_elements_2((l0, l1));
                             } else if div1 == div2 {
-                                count += count_elements_3((&l0, &l1, &l3));
+                                count += count_elements_3((l0, l1, l3));
                             } else if div1 == div3 {
-                                count += count_elements_3((&l0, &l1, &l2));
+                                count += count_elements_3((l0, l1, l2));
                             } else if div2 == div3 {
-                                count += count_elements_3((&l0, &l2, &l1));
+                                count += count_elements_3((l0, l2, l1));
                             } else {
-                                count += count_elements_4((&l0, &l1, &l2, &l3));
+                                count += count_elements_4((l0, l1, l2, l3));
                             }
                         }
                     }
@@ -117,7 +120,8 @@ pub fn find_dividers(value: u64) -> Vec<u64> {
 
 // finds all dividers for given number in range <number^(1/3), number>
 pub fn find_first_dividers(value: u64, factors: &BTreeMap<u64, usize>) -> Vec<u64> {
-    let max = (value as f64).cbrt().powi(2) as u64;
+    let cbrt = (value as f64).cbrt();
+    let max = cbrt.powi(2) as u64;
     let mut vec: Vec<u64> = vec![1];
     for (factor, count) in factors {
         let vec_size = vec.len();
@@ -150,10 +154,10 @@ pub fn find_second_dividers(
         let divided = value / first_divider;
         minimum_divider = divided / first_divider;
         if divided % first_divider != 0 {
-            minimum_divider += 1; // round up, not using f64 because it lacks precision
+            minimum_divider += 1; // round up
         }
     }
-    let max_divider = (value / first_divider).sqrt();
+    let max_divider = (value / first_divider).sqrt() as u64;
     let mut vec1: Vec<u64> = Vec::with_capacity(100);
     let mut vec2: Vec<u64> = Vec::with_capacity(100);
     if minimum_divider == 1 {
