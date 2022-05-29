@@ -1,6 +1,5 @@
 use intmap::IntMap;
 use itertools::Itertools;
-use num::integer::Roots;
 use num_integer::binomial;
 use num_prime::nt_funcs::factorize64;
 use std::cmp;
@@ -120,8 +119,7 @@ pub fn find_dividers(value: u64) -> Vec<u64> {
 
 // finds all dividers for given number in range <number^(1/3), number>
 pub fn find_first_dividers(value: u64, factors: &BTreeMap<u64, usize>) -> Vec<u64> {
-    let cbrt = (value as f64).cbrt();
-    let max = cbrt.powi(2) as u64;
+    let max = (value as f64 + 0.999).cbrt().powi(2) as u64; // 0.999 corrects f64 precision
     let mut vec: Vec<u64> = vec![1];
     for (factor, count) in factors {
         let vec_size = vec.len();
@@ -157,7 +155,7 @@ pub fn find_second_dividers(
             minimum_divider += 1; // round up
         }
     }
-    let max_divider = (value / first_divider).sqrt() as u64;
+    let max_divider = ((value / first_divider) as f64 + 0.999).sqrt() as u64; // 0.999 corrects f64 precision
     let mut vec1: Vec<u64> = Vec::with_capacity(100);
     let mut vec2: Vec<u64> = Vec::with_capacity(100);
     if minimum_divider == 1 {

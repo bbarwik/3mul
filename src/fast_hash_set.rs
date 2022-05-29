@@ -28,11 +28,13 @@ impl FastHashSet {
         if key >= VEC_SIZE as u64 {
             return self.map.get(key);
         }
-        let vec = &self.vec[key as usize];
-        if vec.len() == 0 {
-            None
-        } else {
-            Some(vec)
+        unsafe {
+            let ref vec = self.vec.get_unchecked(key as usize);
+            if vec.len() == 0 {
+                None
+            } else {
+                Some(vec)
+            }
         }
     }
 
@@ -40,7 +42,9 @@ impl FastHashSet {
         if key >= VEC_SIZE as u64 {
             return self.map.get_mut(key);
         }
-        Some(&mut self.vec[key as usize])
+        unsafe {
+            Some(self.vec.get_unchecked_mut(key as usize))
+        }
     }
 
     pub fn remove(&mut self, key: u64) {
